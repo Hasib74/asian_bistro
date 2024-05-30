@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "278672208239",
+    "project_id": "chickenbox-e1bbf",
+    "storage_bucket": "chickenbox-e1bbf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:278672208239:android:b46ca4c0c0f9ce54cab89a",
+        "android_client_info": {
+          "package_name": "com.inovation.asian_bistro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHGz2TUzJ5ib51ADfTjJH0hlixHw04isQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
