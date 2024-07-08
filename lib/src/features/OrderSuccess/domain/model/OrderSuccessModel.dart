@@ -20,8 +20,8 @@ class OrderSuccessModel {
         (json['message'] != null ? Message.fromJson(json['message']) : null)!;
   }
 
-  String? _success;
-  String? _statusCode;
+  var _success;
+  var _statusCode;
   Message? _message;
 
   String? get success => _success;

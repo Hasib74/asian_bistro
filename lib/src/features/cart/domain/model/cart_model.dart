@@ -7,7 +7,11 @@ class Cart {
 
   ProductNames? productNames;
 
-  Cart({this.productNames, this.count, this.price, });
+  Cart({
+    this.productNames,
+    this.count,
+    this.price,
+  });
 
   Cart.fromJson(Map<String, dynamic> json) {
     productNames = ProductNames.fromJson(json['productname']);
@@ -26,6 +30,13 @@ class Cart {
       data['imagePath'] = productNames?.imagePath;
       data['product_type_id'] = productNames?.productTypeId;
       data['is_active'] = productNames?.isActive;
+      data['size_name'] = productNames?.sizeName;
+      data['size_price'] = productNames?.sizePrice;
+      if (productNames?.extraItems != null &&
+          productNames?.extraItems?.isNotEmpty == true) {
+        data['extraItems'] =
+            productNames?.extraItems?.map((v) => v.toJson()).toList();
+      }
       return data;
     }
 

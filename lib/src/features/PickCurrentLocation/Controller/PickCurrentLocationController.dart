@@ -11,14 +11,14 @@ import '../../../core/Map/MapFunction.dart';
 class PickCurrentLocationController extends GetxController {
   RxBool loading = false.obs;
 
-  Rx<LatLng?> latlng = LatLng(0.0, 0.0).obs;
+  Rx<LatLng> latlng = LatLng(0.0, 0.0).obs;
 
   static PickCurrentLocationController to =
       Get.find<PickCurrentLocationController>();
 
   Completer<GoogleMapController> pickLocationGoogleMapcontroller = Completer();
 
-  RxString? addressName = "".obs;
+  String? addressName;
 
   @override
   void onInit() {
@@ -28,7 +28,7 @@ class PickCurrentLocationController extends GetxController {
     getCurrentLocation();
   }
 
-  Future getCurrentLocation() async {
+  void getCurrentLocation() async {
     loading = true.obs;
 
     bool serviceEnabled;
@@ -69,9 +69,9 @@ class PickCurrentLocationController extends GetxController {
   }
 
   Future<String?> getLocationWithStringName() async {
-    String? address = await MapFunction().latLagToString(latlng.value ?? LatLng(0, 0));
+    String? address = await MapFunction().latLagToString(latlng.value);
 
-    addressName?.value = address ?? "";
+    addressName = address;
 
     update();
 

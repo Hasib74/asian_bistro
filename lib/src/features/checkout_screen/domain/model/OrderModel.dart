@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 class OrderModel {
   var serviceProviderId;
   var offerId;
@@ -16,7 +18,6 @@ class OrderModel {
   var user_id;
   var customer_email;
   var lat_value;
-
   var long_value;
 
   List<OrderDetails>? orderDetails;
@@ -58,8 +59,6 @@ class OrderModel {
     deliveryDatetime = json['delivery_datetime'];
     customerId = json["customer_id"];
     customer_email = json["customer_email"];
-    lat_value = json["lat_value"];
-    long_value = json["long_value"];
     if (json['order_details'] != null) {
       orderDetails = <OrderDetails>[];
       json['order_details'].forEach((v) {
@@ -89,7 +88,8 @@ class OrderModel {
     data['delivery_datetime'] = this.deliveryDatetime;
     data["customer_id"] = this.customerId;
     data["customer_email"] = this.customer_email;
-    data["lat_value"] = this.lat_value;
+    /* "lat_value":"37.0" , "long_value":"-122.66"*/
+    data["lat_value"] = this.lat_value ?? "37.0";
     data["long_value"] = this.long_value;
     final orderDetails = this.orderDetails;
     if (orderDetails != null) {
@@ -105,14 +105,30 @@ class OrderDetails {
   String? amount;
   String? product_name;
 
+  String? productSize;
+
+  List<OrderExtraItems>? extraItems = [];
+
   OrderDetails(
-      {this.productNameId, this.quantity, this.amount, this.product_name});
+      {this.productNameId,
+      this.quantity,
+      this.amount,
+      this.product_name,
+      this.productSize,
+      this.extraItems});
 
   OrderDetails.fromJson(Map<String, dynamic> json) {
     productNameId = json['product_name_id'];
     quantity = json['quantity'];
     amount = json['amount'];
     product_name = json["product_name"];
+    productSize = json["size_id"];
+    if (json['extraItems'] != null) {
+      extraItems = <OrderExtraItems>[];
+      json['extraItems'].forEach((v) {
+        extraItems?.add(new OrderExtraItems.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -121,6 +137,33 @@ class OrderDetails {
     data['quantity'] = this.quantity;
     data['amount'] = this.amount;
     data["product_name"] = this.product_name;
+    data["size_id"] = this.productSize;
+    if (this.extraItems != null) {
+      printInfo(info: "Extra Items ::: ${extraItems}");
+      data['extra_items'] = this.extraItems?.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class OrderExtraItems {
+  var extra_item_id;
+  var extra_item_price;
+
+  OrderExtraItems({this.extra_item_id, this.extra_item_price}) {
+    print("Extra Item ID ::: ${extra_item_id}");
+    print("Extra Item Price ::: ${extra_item_price}");
+  }
+
+  OrderExtraItems.fromJson(Map<String, dynamic> json) {
+    extra_item_id = json['extra_item_id'];
+    extra_item_price = json['extra_item_price'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['extra_item_id'] = this.extra_item_id;
+    data['extra_item_price'] = this.extra_item_price;
     return data;
   }
 }

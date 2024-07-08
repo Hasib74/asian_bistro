@@ -219,7 +219,7 @@ class _ProductCardState extends State<ProductCard> {
       top: 0,
       right: 0,
       child: InkWell(
-        onTap: widget.cartOnTap,
+        //onTap: widget.cartOnTap,
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.primaryColor,

@@ -31,12 +31,15 @@ class _CartScreenState extends State<CartScreen> {
     super.initState();
 
     CartControllerBinding().dependencies();
+
+    WidgetsFlutterBinding.ensureInitialized().addPostFrameCallback((timeStamp) {
+      CartController.to.clearData();
+      CartController.to.totalAmount();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    CartController.to.totalAmount();
-
     return Scaffold(
       appBar: widget.enableAppBar != null && widget.enableAppBar == true
           ? AppBar(
@@ -91,41 +94,39 @@ class _CartScreenState extends State<CartScreen> {
                                 topRight: Radius.circular(10))),
                         child: Row(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                "Total Amount : \$ ${CartController.to.amount.value.toStringAsFixed(2)}",
-                                style: Get.theme.textTheme.bodyMedium?.copyWith(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            Expanded(
-                              child: InkWell(
-                                onTap: () async {
-                                  Get.put(NetworkInfoController());
+                            Obx((){
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  "Total Amount : \$ ${CartController.to.amount.value.toStringAsFixed(2)}",
+                                  style: Get.theme.textTheme.bodyMedium
+                                      ?.copyWith(color: Colors.white),
+                                ),
+                              );
+                            }),
+                            Spacer(),
+                            InkWell(
+                              onTap: () async {
+                                Get.put(NetworkInfoController());
 
-                                  if (CartController.to.cartLst.value.length >
-                                      0) {
-                                    CheckOutController.to.loading.value = false;
+                                if (CartController.to.cartLst.value.length >
+                                    0) {
+                                  CheckOutController.to.loading.value = false;
 
-                                    Get.toNamed(AppRoutes.CHECK_OUT);
-                                  } else {
-                                    AppSnackBar.errorSnackbar(
-                                        msg: "Please add product to cart.");
-                                  }
-                                },
-                                child: AppButtonWidget(
-                                    borderRadius: 10,
-                                    width: 120,
-                                    backgroundColor: AppColors.whiteColor,
-                                    titleColor: AppColors.primaryColor,
-                                    title: "Check Out",
-                                    leadingCenter: true),
-                              ),
+                                  Get.toNamed(AppRoutes.CHECK_OUT);
+                                } else {
+                                  AppSnackBar.errorSnackbar(
+                                      msg: "Please add product to cart.");
+                                }
+                              },
+                              child: AppButtonWidget(
+                                  borderRadius: 10,
+                                  width: 120,
+                                  titleColor: AppColors.whiteColor,
+                                  title: "Check Out",
+                                  leadingCenter: true),
                             ),
-                            AppSpaces.spaces_width_5,
+                            AppSpaces.spaces_width_25,
                           ],
                         )),
                     AppSpaces.spaces_height_30,

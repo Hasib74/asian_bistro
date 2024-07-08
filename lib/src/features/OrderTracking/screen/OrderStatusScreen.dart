@@ -349,7 +349,11 @@ class _OrderTackingScreenState extends State<OrderTackingScreen> {
                             child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
-                              '${OrderTrackingController.to.orderDetails.value.productDetails?.where((element) => element.productNameId == e.productNameId).first.productName}'),
+                              '${OrderTrackingController.to.orderDetails.value.productDetails?.where((element) {
+                                printInfo(info: "Product Name Id One: ${element.productNameId}");
+                                printInfo(info: "Product Name Id Two: ${e.productNameId}");
+                                return element.productNameId.toString() == e.productNameId.toString();
+                              }).first.productName}'),
                         )),
                         Center(
                             child: Padding(

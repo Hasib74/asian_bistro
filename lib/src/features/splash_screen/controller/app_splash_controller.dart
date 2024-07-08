@@ -7,7 +7,7 @@ class AppSplashController extends GetxController {
     // TODO: implement onInit
     super.onInit();
 
-    Future.delayed(
-        const Duration(seconds: 5), () => Get.offNamed(AppRoutes.SERVICE_TYPE_OPTION));
+    Future.delayed(const Duration(seconds: 5),
+        () => Get.offNamed(AppRoutes.SERVICE_TYPE_OPTION));
   }
 }

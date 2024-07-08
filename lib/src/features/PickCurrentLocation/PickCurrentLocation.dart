@@ -44,13 +44,13 @@ class _PickCurrentLocationScreenState extends State<PickCurrentLocationScreen> {
                           initialCameraPosition: CameraPosition(
                             zoom: 16.0,
                             target:
-                                PickCurrentLocationController.to.latlng.value ?? LatLng(0, 0)
+                                PickCurrentLocationController.to.latlng.value,
                           ),
                           markers: {
                             Marker(
                               markerId: MarkerId("userPositionId"),
                               position:
-                                  PickCurrentLocationController.to.latlng.value ?? LatLng(0, 0) ,
+                                  PickCurrentLocationController.to.latlng.value,
                               icon: BitmapDescriptor.defaultMarker,
                             )
                           },

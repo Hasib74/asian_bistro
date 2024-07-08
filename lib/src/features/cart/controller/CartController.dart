@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:get/get.dart';
+import 'package:pizza_user_app/src/features/product_details/model/extra_items_response_model.dart';
+import 'package:pizza_user_app/src/features/product_details/model/product_size_response_model.dart';
 
 import '../../../core/database/local/LocalDataSourceController.dart';
 import '../../all_products/data/domain/model/product_model.dart';
@@ -19,7 +21,19 @@ class CartController extends GetxController {
     super.onInit();
   }
 
+  RxInt totalQuantity() {
+    RxInt totalQuantity = 0.obs;
+    for (var element in cartLst) {
+      totalQuantity += int.parse(element.count.toString());
+    }
+    return totalQuantity;
+  }
+
   addToCart({ProductNames? productNames, var count, var price}) {
+    print("Adding extra items : ${productNames?.extraItems}");
+
+    print("Size Id : ${productNames?.productSize}");
+
     bool _isAlreadyAdded = false;
     _isAlreadyAdded = isAlreadyAddedToCart(productNames ?? ProductNames());
     if (_isAlreadyAdded == false) {
@@ -28,11 +42,21 @@ class CartController extends GetxController {
         productNames: productNames,
         count: count,
         price: price,
-
       ));
       LocalDataSourceController.to.storeCart(cartLst.value);
     }
     update();
+  }
+
+  isAlreadyHaveIntoCartV2(String? productNameId) {
+    bool _value = false;
+    cartLst.forEach((element) {
+      if (element.productNames?.product_name_id.toString() ==
+          productNameId.toString()) {
+        _value = true;
+      }
+    });
+    return _value;
   }
 
   isAlreadyAddedToCart(ProductNames productNames) {
@@ -74,8 +98,6 @@ class CartController extends GetxController {
           productNames: ProductNames.fromJson(body[
               "productname"]), /*vendorType: Vendor.fromJson(body["vendorType"])*/
         ));
-
-
       });
 
       printInfo(info: "GetCart CARTLIST 11 =>> ${data}");
@@ -85,6 +107,22 @@ class CartController extends GetxController {
 
       refresh();
     } catch (err) {}
+  }
+
+  deleteExtraItems({String? productNameId, String? extraItemId}) {
+    print("Extra Item Id  == ${extraItemId}");
+    var cart = cartLst
+        .where((p0) => p0.productNames?.product_name_id == productNameId)
+        .first;
+
+    print("Product Names  == ${cart}");
+
+    cart.productNames?.extraItems
+        ?.removeWhere((element) => element.extraItemId == extraItemId);
+
+    LocalDataSourceController.to.storeCart(cartLst.value);
+    CartController.to.totalAmount();
+    update();
   }
 
   updateCart(Cart cart, int count, var price, {bool isRemoved = false}) {
@@ -136,6 +174,21 @@ class CartController extends GetxController {
     update();
   }
 
+  updateCartItemSelectedSizePrice(String? productNameId, String? price) async {
+    printInfo(info: "Product Name Id  == ${productNameId}");
+    printInfo(info: "Price  == ${price}");
+
+    var cartIndex = cartLst.indexWhere((element) =>
+        element.productNames?.product_name_id.toString() == productNameId);
+
+    printInfo(info: "Cart Index  == ${cartIndex}");
+
+    cartLst[cartIndex].productNames?.price = price;
+    LocalDataSourceController.to.storeCart(cartLst);
+    CartController.to.totalAmount();
+    // update();
+  }
+
   totalAmount({bool isPlus = true}) {
     try {
       List<Cart> _temp_cart_list = [];
@@ -160,15 +213,111 @@ class CartController extends GetxController {
 
       _temp_cart_list.forEach((element) {
         amount.value += double.parse((int.parse(element.count.toString()) *
-                double.parse(element.price.toString()))
+                double.parse(element.productNames?.sizePrice ??
+                    element.productNames?.price ??
+                    "0.0"))
             .toString());
         /* if (isPlus) {
           print("Amount ==> ${element.price}");
 
         }*/
       });
+
+      print("The total amount ======> one --> ${amount.value}");
+
+      _temp_cart_list.forEach((element) {
+        printInfo(
+            info: "Extra Items price == ${element.productNames?.extraItems}");
+        amount.value += double.parse(element.productNames?.extraItems
+                ?.map((e) => e.extraItemPrice)
+                .reduce((value, element) =>
+                    "${double.parse(value!) + double.parse(element!)}") ??
+            "0");
+      });
+
+      print("The total amount ======> ${amount.value}");
+
+/*      _temp_cart_list.forEach((element) {
+        print("Cart Size price 666: ${element.productNames?.sizePrice}");
+        amount.value += double.parse(element.productNames?.sizePrice ?? "0.0");
+      });*/
     } catch (err) {
       return null;
     }
   }
+
+  void removeAllExtraItems(product_name_id) {
+    var cart = cartLst
+        .where((p0) => p0.productNames?.product_name_id == product_name_id)
+        .first;
+
+    cart.productNames?.extraItems?.clear();
+    LocalDataSourceController.to.storeCart(cartLst.value);
+    CartController.to.totalAmount();
+    update();
+  }
+
+  void addExtraItems(ProductExtraItem e, Cart cart) {
+    var cartIndex = cartLst.indexWhere((element) =>
+        element.productNames?.product_name_id ==
+        cart.productNames?.product_name_id);
+
+    print("Cart Index  == ${cartIndex}");
+
+    if (cartIndex != -1) {
+      cartLst[cartIndex].productNames?.extraItems?.add(ExtraItemsModel(
+          extraItemId: e.id.toString(),
+          extraItemName: e.name,
+          extraItemPrice: e.price,
+          extraItemImage: e.image));
+      LocalDataSourceController.to.storeCart(cartLst.value);
+      CartController.to.totalAmount();
+    }
+    update();
+  }
+
+  void removeExtraItems(ProductExtraItem e, Cart cart) {
+    // remove extra items
+    var cartIndex = cartLst.indexWhere((element) =>
+        element.productNames?.product_name_id ==
+        cart.productNames?.product_name_id);
+
+    cartLst[cartIndex]
+        .productNames
+        ?.extraItems
+        ?.removeWhere((element) => element.extraItemId == e.id.toString());
+    LocalDataSourceController.to.storeCart(cartLst.value);
+    CartController.to.totalAmount();
+    update();
+  }
+
+  updateSize(ProductSize e, Cart cart) {
+    var cartIndex = cartLst.indexWhere((element) =>
+        element.productNames?.product_name_id ==
+        cart.productNames?.product_name_id);
+
+    // cartLst[cartIndex].productNames?.productSize = e;
+    cartLst[cartIndex].productNames?.sizeName = e.name;
+
+    print("Cart size price 1: ${e.sizePrice}");
+    cartLst[cartIndex].productNames?.sizePrice = e.sizePrice;
+
+    printInfo(
+        info:
+            "After saving to storage ${cartLst[cartIndex].productNames?.sizePrice}");
+
+    LocalDataSourceController.to.storeCart(cartLst);
+    CartController.to.totalAmount();
+    update();
+  }
+
+  void clearData() {
+    amount.value = 0.0;
+    update();
+  }
+/*  getSelectedSizePrice(ProductSize e, Cart cart){
+
+    return
+
+  }*/
 }

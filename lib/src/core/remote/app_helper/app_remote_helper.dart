@@ -10,6 +10,8 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 
 import '../../../features/auth/controller/auth_controller.dart';
+import '../../../features/auth/domain/model/token.dart';
+import '../../database/local/LocalDataSourceController.dart';
 
 
 enum Method { POST, GET, PUT, DELETE, PATCH }
@@ -23,24 +25,32 @@ class ApiClient {
 //  static String token;
 
   static Future<http.Response?> Request(
-      { required String url,
-      Method method = Method.GET,
-      var body,
-      bool enableHeader = false}) async {
+      {required String url,
+        Method method = Method.GET,
+        var body,
+        bool? isContentTypeJson = true,
+        bool enableHeader = false}) async {
     http.Response response;
 
     try {
-      var _header = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ${AuthController.to.token}'
-      };
-      print("Token...................  ${AuthController.to.token}");
+      Token? token = await LocalDataSourceController.to.getToken();
+
+      var _header;
+
+      if (token != null) {
+        _header = {
+          if (isContentTypeJson == true) 'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${token?.token ?? ""}'
+        };
+      }
+
       print("Header...................  ${_header}");
 
       if (method == Method.POST) {
         if (enableHeader) {
-          response = await http.post(Uri.parse(url), body: body, headers: _header);
+          response =
+          await http.post(Uri.parse(url), body: body, headers: _header);
         } else {
           response = await http.post(Uri.parse(url), body: body);
         }
@@ -60,12 +70,12 @@ class ApiClient {
           body: body,
           method: method,
           response: response.body,
-          header: enableHeader ? header : "no header");
+          header: enableHeader ? _header : "no header");
 
       return response;
     } catch (e) {
       print("Request Error :: $e");
-      return null ;
+      return null;
     }
   }
 

@@ -58,4 +58,10 @@ class ApiUrls {
   static var banner = "${base_url}banners";
   static var all_summer_offer = "${base_url}all-summer-offer/product";
   static var all_winter_offer = "${base_url}all-winter-offer/product";
+
+  static var getSize = "${base_url}product/size";
+
+  static var extraItems = "${base_url}product/extra-item";
+
+
 }

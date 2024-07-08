@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
@@ -17,7 +16,6 @@ import '../OrderSuccess/domain/model/OrderSuccessModel.dart';
 import '../PickCurrentLocation/Controller/PickCurrentLocationController.dart';
 import '../auth/controller/auth_controller.dart';
 import '../cart/controller/CartController.dart';
-import '../delivery_options/delivery_options.dart';
 import '../profile/screen/EditProfileController/ProfileController.dart';
 import 'controller/check_out_controller.dart';
 
@@ -31,23 +29,22 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
   void initState() {
     // TODO: implement initState
 
-    WidgetsFlutterBinding.ensureInitialized().addPostFrameCallback((timeStamp) {
-      CheckoutBinding().dependencies();
-
-      CheckOutController.to.loading(false);
-    });
-
-    //PickCurrentLocationController.to.getCurrentLocation();
-
+    CheckoutBinding().dependencies();
     super.initState();
   }
-
-  GlobalKey<FormFieldState> addressKey = GlobalKey<FormFieldState>();
 
   @override
   Widget build(BuildContext context) {
     //Get.put(NetworkInfoController());
     // printInfo(info: "CheckOut  ===> ${Get.context.}");
+
+    if (!Get.isRegistered<PickCurrentLocationController>()) {
+      Get.put(PickCurrentLocationController());
+    }
+
+    PickCurrentLocationController.to.getCurrentLocation();
+
+    CheckOutController.to.loading(false);
 
     return Scaffold(
       bottomNavigationBar: PaymentOption(),
@@ -91,13 +88,13 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
 
   Align _close_button() {
     return Align(
-      alignment: Alignment.topRight,
+      alignment: Alignment.topLeft,
       child: Padding(
-        padding: const EdgeInsets.only(right: 16),
+        padding: const EdgeInsets.only(left: 16),
         child: InkWell(
           onTap: () => Get.back(),
           child: Icon(
-            Icons.close,
+            Icons.arrow_back_ios_new,
             size: 30,
           ),
         ),
@@ -136,17 +133,11 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
               children: [
                 Text(
                   "Total Items",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 Text(
                   "${CartController.to.cartLst.length}",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 )
               ],
             ),
@@ -158,16 +149,14 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
               children: [
                 Text(
                   "Total Price",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 Text(
-                  "\$${double.parse(CartController.to.amount.toString()).toStringAsFixed(2)}",
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.primaryColor,
-                      fontWeight: FontWeight.w800),
+                  "\$${double.parse(CheckOutController.to.total_amount()).toStringAsFixed(2)}",
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(color: AppColors.primaryColor),
                 )
               ],
             ),
@@ -178,36 +167,35 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
   }
 
   _address(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(left: 16, right: 16),
-      height: 140,
-      width: Get.width,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-          border: Border.all(color: Colors.grey.withOpacity(0.6))),
-      child: Column(
-        // mainAxisAlignment: MainAxisAlignment.center,
-        //  crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                //Expanded(child: Container()),
-                Expanded(
-                    child: Text(
-                  "Address",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
-                  textAlign: TextAlign.center,
-                )),
-                Visibility(
-                  visible: false,
-                  child: Expanded(
+    return GetBuilder<PickCurrentLocationController>(builder: (_) {
+      /*print(
+          "Addressssssssssssssss............ ${ProfileController.to.user.value.id}")*/
+
+      return Container(
+        margin: EdgeInsets.only(left: 16, right: 16),
+        height: 100,
+        width: Get.width,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+            border: Border.all(color: Colors.grey.withOpacity(0.6))),
+        child: Column(
+          // mainAxisAlignment: MainAxisAlignment.center,
+          //  crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(child: Container()),
+                  Expanded(
+                      child: Text(
+                    "Address",
+                    style: Theme.of(context).textTheme.bodySmall,
+                    textAlign: TextAlign.center,
+                  )),
+                  Expanded(
                       child: InkWell(
                     onTap: () async {
                       var picked_location =
@@ -226,8 +214,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                             picked_location.longitude;
                         ProfileController.to.user.value.address = value;
 
-                        PickCurrentLocationController.to.addressName?.value =
-                            value;
+                        PickCurrentLocationController.to.addressName = value;
 
                         ProfileController.to.update();
 
@@ -244,58 +231,20 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                       textAlign: TextAlign.right,
                     ),
                   )),
-                ),
-              ],
-            ),
-          ),
-          Spacer(),
-          /*  Obx(
-            () => Text(
-              PickCurrentLocationController.to.addressName?.value ?? "",
-              textAlign: TextAlign.center,
-            ),
-          ),*/
-
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextFormField(
-              key: addressKey,
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                hintText: "Enter your address",
-
-                hintStyle: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(color: Colors.grey),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: AppColors.primaryColor)),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: AppColors.primaryColor)),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: AppColors.primaryColor)),
+                ],
               ),
-              onChanged: (value) {
-                ProfileController.to.user.value.address = value;
-                ProfileController.to.update();
-              },
-              controller: TextEditingController()
-                ..text = ProfileController.to.user.value.address ?? "",
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return "Please enter your address";
-                }
-              },
             ),
-          ),
-          Spacer(),
-          Spacer(),
-        ],
-      ),
-    );
+            Spacer(),
+            Text(
+              _.addressName ?? "",
+              textAlign: TextAlign.center,
+            ),
+            Spacer(),
+            Spacer(),
+          ],
+        ),
+      );
+    });
   }
 
   Obx _cashOnDelivery_Or_OnlinePay_buttton(BuildContext context) {
@@ -324,9 +273,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium
-                              ?.copyWith(
-                                  color: AppColors.whiteColor,
-                                  fontWeight: FontWeight.w900),
+                              ?.copyWith(color: AppColors.whiteColor),
                         ),
                       ],
                     ),
@@ -373,9 +320,7 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
-                                  ?.copyWith(
-                                      color: AppColors.whiteColor,
-                                      fontWeight: FontWeight.w900),
+                                  ?.copyWith(color: AppColors.whiteColor),
                             ),
                           ],
                         ),
@@ -409,19 +354,6 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
   _checkOut_button(BuildContext context) {
     return InkWell(
       onTap: () async {
-        addressKey.currentState?.save();
-
-        print(
-            "addressKey.currentState?.validate() : ${addressKey.currentState?.validate()}");
-
-        if (addressKey.currentState?.validate() == false) {
-          print("Address is valid");
-
-          return;
-        }
-
-        await Get.to(DeliveryOptions());
-
         print(
             "Seleted Payment Type ${CheckOutController.to.isCashOnDelivery.value}");
         if (ProfileController.to.user.value.fullName == null) {
@@ -604,8 +536,10 @@ class _CheckOutScreenState extends State<CheckOutScreen> {
         child: Center(
           child: Text(
             "Checkout Now",
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.whiteColor, fontWeight: FontWeight.w900),
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: AppColors.whiteColor),
           ),
         ),
       ),
